@@ -1,6 +1,36 @@
 [build-system]
 # Minimum requirements for the build system to execute.
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+package_demo = ["*.json"]
+
+[project]
+name = "packaging-demo"
+authors = [
+    {name = "Josiah Carberry", email = "josiah_carberry@brown.edu"},
+]
+description = "My package description"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["one", "two"]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "numpy",
+    'importlib-metadata; python_version<"3.8"',
+]
+
+# dynamic = ["version"]
+version = "0.0.0"
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+dev = ["packaging-demo[test]"]
+
 
 [tool.black]
 line-length = 119
@@ -16,8 +46,6 @@ max-line-length = 99
 
 # radon
 radon-max-cc = 10
-
-
 
 [tool.isort]
 profile = "black"
