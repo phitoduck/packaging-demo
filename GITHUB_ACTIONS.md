@@ -143,7 +143,7 @@ Bonus: tests
 
 Bonus GA
 
-- find a way to print the variables, event, etc. for easy debugging
+- [x] find a way to print the variables, event, etc. for easy debugging
 
 Publishing to PyPI
 
