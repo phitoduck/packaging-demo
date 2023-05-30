@@ -27,8 +27,6 @@ jobs:
         run: echo '${{ toJSON(vars) }}'
       - name: Dump job context
         run: echo '${{ toJSON(job) }}'
-      - name: Dump jobs context
-        run: echo '${{ toJSON(jobs) }}'
 
 
   build-and-publish:
