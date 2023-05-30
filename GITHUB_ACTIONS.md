@@ -130,7 +130,7 @@ CI
 
 Goals for tonight
 
-- [ ] publish a package to PyPI locally
+- [x] publish a package to PyPI locally
 - [ ] publish the package from CI
 - [ ] find a way to push tags *not* during PR, but yes after merge
 
@@ -141,6 +141,9 @@ Bonus: tests
 - [ ] fail if coverage is below a certain threshold
 - [ ] compute test coverage even if not all tests pass, or argue why this isn't valuable
 
+Bonus GA
+
+- find a way to print the variables, event, etc. for easy debugging
 
 Publishing to PyPI
 
@@ -151,3 +154,4 @@ Try locally
 - create a .gitignore file for .env
 - add PYPI_USERNAME and PYPI_PASSWORD to .env
 - add TEST_PYPI_USERNAME and TEST_PYPI_PASSWORD to .env
+- add twine and build to the dev extra in pyproject.toml

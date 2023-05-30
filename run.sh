@@ -1,11 +1,22 @@
 #!/bin/bash
 
+# fail on error
+set -ex
+
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+function release {
+    clean
+    build
+    publish:test
+    publish:prod
+}
 
 function build {
     python -m build --wheel --sdist "$THIS_DIR"
 }
 
+# test.pypi.org
 function publish:test {
     load-dotenv
     twine upload dist/* \
@@ -15,11 +26,13 @@ function publish:test {
         --verbose
 }
 
+# pypi.org
 function publish:prod {
     load-dotenv
     twine upload dist/* \
         --username __token__ \
-        --password $PROD_PYPI_TOKEN
+        --password $PROD_PYPI_TOKEN \
+        --verbose
 }
 
 function install {
@@ -60,7 +73,7 @@ function clean {
 
 function load-dotenv {
     while read -r line; do
-        export "$line"
+        export "$line" || true
     done < "$THIS_DIR/.env"
 }
 
