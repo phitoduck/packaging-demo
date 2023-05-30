@@ -23,6 +23,8 @@ jobs:
         run: echo '${{ toJSON(strategy) }}'
       - name: Dump matrix context
         run: echo '${{ toJSON(matrix) }}'
+      - name: Dump vars
+        run: echo '${{ toJSON(vars) }}'
 
   build-and-publish:
     runs-on: ubuntu-latest
