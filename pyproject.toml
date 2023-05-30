@@ -6,10 +6,14 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.package-data]
 package_demo = ["*.json"]
 
+# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html#dynamic-metadata
+[tool.setuptools.dynamic]
+version = {file = "version.txt"}
+
 [project]
-name = "packaging-demo"
+name = "packaging-demo-eric"
 authors = [
-    {name = "Josiah Carberry", email = "josiah_carberry@brown.edu"},
+    {name = "Eric Riddoch", email = "some-email@gmail.com"},
 ]
 description = "My package description"
 readme = "README.md"
@@ -24,8 +28,7 @@ dependencies = [
     'importlib-metadata; python_version<"3.8"',
 ]
 
-# dynamic = ["version"]
-version = "0.0.0"
+dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
