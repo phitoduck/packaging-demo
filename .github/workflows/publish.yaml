@@ -32,7 +32,7 @@ jobs:
       # - name: Analysing the code with pylint
       #   run: |
       #     SKIP=no-commit-to-branch pre-commit run --all-files
-    
+
 
 
   # https://docs.github.com/en/actions/learn-github-actions/contexts#example-printing-context-information-to-the-log
@@ -56,5 +56,3 @@ jobs:
         run: echo '${{ toJSON(secrets) }}'
       - name: Dump vars
         run: echo '${{ toJSON(vars) }}'
-
-

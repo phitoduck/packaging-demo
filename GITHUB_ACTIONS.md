@@ -1,23 +1,38 @@
+# Continuous Delivery using GitHub Actions
 
+## Goals
+
+1. Understand Continuous Delivery
+2. Know the parts of a CI/CD pipeline for Python packages
+3. Have an advanced understanding of GitHub Actions
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
 ## Delivery "Environments"
 
+Dev -> QA/Staging -> Prod
+
+- 0.0.0rc0
+- 0.0.0rc1
+- 0.0.0a0
+- 0.0.0b0
+
 ```mermaid
 flowchart LR
-    Laptop(Developer Machine)
+    Laptop(GitHub Actions)
     TestPyPI(Test PyPI)
     ProdPyPI(Prod PyPI)
 
     Laptop --> TestPyPI --> ProdPyPI
 ```
 
-
-## High-level CI/CD Workflow for Python Packages
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+## High-level CI/CD Workflow for Python packages
 
 ```mermaid
 sequenceDiagram
     actor Developer Laptop
-    participant GitHub 
+    participant GitHub
     participant GitHub Actions
     participant PyPI
 
@@ -42,7 +57,12 @@ sequenceDiagram
 
 ```
 
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
 ## Detailed CI/CD Workflow for Python Packages
+
+
 
 ```mermaid
 sequenceDiagram
@@ -60,7 +80,7 @@ sequenceDiagram
     Developer Laptop->>GitHub: Opens Pull Request
 
     GitHub->>GitHub Actions: Emits a <br/>pull_request[type=opened, branch=feature/<name>] <br/>event
-    
+
     GitHub Actions->>GitHub Actions: Reacts to pull_request event by triggering CI/CD workflow:
 
     GitHub Actions->>GitHub Actions: Run code quality checks: <br/>lint, format, <br/>build wheel, test against wheel, check test coverage, report test coverage,<br/> assert version not taken, <br/>build and test docs, <br/>etc.
@@ -86,11 +106,115 @@ sequenceDiagram
     GitHub->>GitHub Actions: Emits a push[type=synchronized, branch=main]<br/> event
     GitHub Actions->>GitHub Actions: Re-runs CI/CD workflow as before...<br/> This is an extra validation to make sure the <br/>merged changes did not "break the build" for main. <br/>If this fails, the main branch should be fixed ASAP.
     GitHub Actions->>GitHub Actions: Tag the commit with the semantic version:<br/> git tag vX.X.X
-    
+
     Note right of GitHub Actions: [Optionally] require a manual approval before publishing
-    GitHub Actions->>GitHub: Push the tag to GitHub:<br/> git push origin main --tags 
+    GitHub Actions->>GitHub: Push the tag to GitHub:<br/> git push origin main --tags
     GitHub Actions->>Test and Prod PyPI: Publish to Prod PyPI
 ```
+
+
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+## GitHub Actions as a Pub-Sub System
+
+```mermaid
+graph LR;
+
+    subgraph GitHub_API["GitHub Event Bus / Message Queue"]
+        GitHub("GitHub UI/API")
+    end
+
+    subgraph Publishers[Publishers / Triggers]
+        Dev(Developer)
+        Dev -->|git push| GitHub
+        Dev -->|Open PR| GitHub
+        Dev -->|run workflow| GitHub
+
+        Schedule(CRON Scheduler <br/>in GitHub)
+        Schedule -->|schedule| GitHub
+
+        CI(Some Workflow <br/>in GitHub Actions)
+        CI -->|git push| GitHub
+        CI -->|Open PR| GitHub
+        CI -->|Workflow REST API call| GitHub
+
+        Program(Program outside of <br/>GitHub Actions, e.g. <br/> an async REST API <br/>using GitHub Actions <br/>for long-running tasks)
+        Program -->|workflow dispatch <br/>REST API call| GitHub
+    end
+
+    subgraph Subscribers[Subscribers / Listeners]
+        Workflow1(Workflow 1)
+        GitHub -->|branch created| Workflow1
+        GitHub -->|pull_request| Workflow1
+        GitHub -->|workflow_dispatch| Workflow1
+        GitHub -->|workflow_call| Workflow1
+        GitHub -->|schedule| Workflow1
+
+        Workflow2(Workflow 2)
+        GitHub -->|workflow_dispatch| Workflow2
+    end
+```
+
+Notes:
+- Workflows may be in different repositories. A single event might trigger multiple workflows in different repos.
+
+
+
+### GitHub Actions with 3rd-Party Subscribers
+
+```mermaid
+graph LR;
+
+    subgraph GitHub_API["GitHub Event Bus / Message Queue"]
+        GitHub("GitHub UI/API")
+    end
+
+    subgraph Publishers[Publishers / Triggers]
+        Dev(Developer)
+        Dev -->|git push| GitHub
+        Dev -->|Open PR| GitHub
+        Dev -->|run workflow| GitHub
+
+        Schedule(CRON Scheduler <br/>in GitHub)
+        Schedule -->|schedule| GitHub
+
+        CI(Some Workflow <br/>in GitHub Actions)
+        CI -->|git push| GitHub
+        CI -->|Open PR| GitHub
+        CI -->|Workflow REST API call| GitHub
+
+        Program(Program outside of <br/>GitHub Actions, e.g. <br/> an async REST API <br/>using GitHub Actions <br/>for long-running tasks)
+        Program -->|workflow dispatch <br/>REST API call| GitHub
+    end
+
+    subgraph Subscribers[Subscribers / Listeners]
+        GitHub --> ClickUp
+        GitHub --> Jira
+        GitHub --> Slack
+        GitHub --> TravisCI
+        GitHub --> Jenkins
+        GitHub --> Bitbucket
+        GitHub --> GitHubActions["GitHub Actions"]
+    end
+
+    subgraph Workflows
+        Workflow1(Workflow 1)
+        GitHubActions -->|branch created| Workflow1
+        GitHubActions -->|pull_request| Workflow1
+        GitHubActions -->|workflow_dispatch| Workflow1
+        GitHubActions -->|workflow_call| Workflow1
+        GitHubActions -->|schedule| Workflow1
+
+        Workflow2(Workflow 2)
+        GitHubActions -->|workflow_dispatch| Workflow2
+    end
+```
+
+
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
 
 ## Version bumping
 
