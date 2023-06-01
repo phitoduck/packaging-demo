@@ -8,7 +8,7 @@ package_demo = ["*.json"]
 
 [project]
 name = "packaging-demo-eric"
-version = "0.0.4+540cad0" # PEP 440
+version = "0.0.4" # PEP 440
 authors = [
     {name = "Eric Riddoch", email = "some-email@gmail.com"},
 ]
