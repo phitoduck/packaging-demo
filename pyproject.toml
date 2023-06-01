@@ -6,12 +6,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.package-data]
 package_demo = ["*.json"]
 
-# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html#dynamic-metadata
-[tool.setuptools.dynamic]
-version = {file = "version.txt"}
-
 [project]
 name = "packaging-demo-eric"
+version = "0.0.4" # PEP 440
 authors = [
     {name = "Eric Riddoch", email = "some-email@gmail.com"},
 ]
@@ -28,11 +25,13 @@ dependencies = [
     'importlib-metadata; python_version<"3.8"',
 ]
 
-dynamic = ["version"]
+# dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-dev = ["packaging-demo[test]"]
+release = ["build", "twine"]
+static-code-qa = ["pre-commit"]
+dev = ["packaging-demo-eric[test,release,static-code-qa]"]
 
 
 [tool.black]
@@ -84,3 +83,7 @@ line-length = 99
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402"]
 "path/to/file.py" = ["E402"]
+
+# # https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html#dynamic-metadata
+# [tool.setuptools.dynamic]
+# version = {file = "version.txt"}

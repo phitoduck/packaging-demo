@@ -1,80 +1,76 @@
 #!/bin/bash
 
-# fail on error
-set -ex
+set -e
 
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-function release {
-    clean
-    build
-    publish:test
-    publish:prod
+function install {
+    python -m pip install --upgrade pip
+    python -m pip install --editable "$THIS_DIR/[dev]"
+}
+
+function lint {
+    pre-commit run --all-files
+}
+
+function lint:ci {
+    SKIP=no-commit-to-branch pre-commit run --all-files
 }
 
 function build {
-    python -m build --wheel --sdist "$THIS_DIR"
+    python -m build --sdist --wheel "$THIS_DIR/"
 }
 
-# test.pypi.org
+function release:test {
+    lint
+    clean
+    build
+    publish:test
+}
+
+function release:prod {
+    release:test
+    publish:prod
+}
+
 function publish:test {
-    load-dotenv
+    try-load-dotenv || true
     twine upload dist/* \
         --repository testpypi \
-        --username __token__ \
-        --password $TEST_PYPI_TOKEN \
-        --verbose
+        --username=__token__ \
+        --password="$TEST_PYPI_TOKEN"
 }
 
-# pypi.org
 function publish:prod {
-    load-dotenv
+    try-load-dotenv || true
     twine upload dist/* \
-        --username __token__ \
-        --password $PROD_PYPI_TOKEN \
-        --verbose
-}
-
-function install {
-    pip install --editable "$THIS_DIR"
-}
-
-function start {
-    echo "start task not implemented"
-}
-
-function default {
-    start
+        --repository pypi \
+        --username=__token__ \
+        --password="$PROD_PYPI_TOKEN"
 }
 
 function clean {
+    rm -rf dist build
     find . \
-        -name "node_modules" -prune -false \
-        -o -name "venv" -prune -false \
-        -o -name ".git" -prune -false \
-        -type d -name "*.egg-info" \
-        -o -type d -name "dist" \
-        -o -type d -name ".projen" \
-        -o -type d -name "build_" \
-        -o -type d -name "build" \
-        -o -type d -name "cdk.out" \
-        -o -type d -name ".mypy_cache" \
-        -o -type d -name ".pytest_cache" \
-        -o -type d -name "test-reports" \
-        -o -type d -name "htmlcov" \
-        -o -type d -name ".coverage" \
-        -o -type d -name ".ipynb_checkpoints" \
-        -o -type d -name "__pycache__" \
-        -o -type f -name "coverage.xml" \
-        -o -type f -name ".DS_Store" \
-        -o -type f -name "*.pyc" \
-        -o -type f -name "*cdk.context.json" | xargs rm -rf {}
+      -type d \
+      \( \
+        -name "*cache*" \
+        -o -name "*.dist-info" \
+        -o -name "*.egg-info" \
+      \) \
+      -not -path "./venv/*" \
+      -exec rm -r {} +
 }
 
-function load-dotenv {
+function try-load-dotenv {
+    if [ ! -f "$THIS_DIR/.env" ]; then
+        echo "no .env file found"
+        return 1
+    fi
+
     while read -r line; do
-        export "$line" || true
-    done < "$THIS_DIR/.env"
+        export "$line"
+    done < <(grep -v '^#' "$THIS_DIR/.env" | grep -v '^$')
 }
 
 function help {
@@ -84,4 +80,4 @@ function help {
 }
 
 TIMEFORMAT="Task completed in %3lR"
-time ${@:-default}
+time ${@:-help}
