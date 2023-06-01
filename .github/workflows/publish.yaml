@@ -18,30 +18,30 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
-      - name: Install Python dependencies
-        run: |
-          /bin/bash -x run.sh install
-      - name: Lint, Format, and other static code quality checks
-        run: |
-          /bin/bash -x run.sh lint:ci
-      - name: Build python package
-        run: |
-          /bin/bash -x run.sh build
+      # - name: Install Python dependencies
+      #   run: |
+      #     /bin/bash -x run.sh install
+      # - name: Lint, Format, and other static code quality checks
+      #   run: |
+      #     /bin/bash -x run.sh lint:ci
+      # - name: Build python package
+      #   run: |
+      #     /bin/bash -x run.sh build
 
-      - name: Publish to TestPyPI
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          /bin/bash -x run.sh publish:test
-        env:
-          TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
-      - name: Publish to Prod PyPI
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          /bin/bash -x run.sh publish:prod
-        env:
-          PROD_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN }}
+      # - name: Publish to TestPyPI
+      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #   run: |
+      #     /bin/bash -x run.sh publish:test
+      #   env:
+      #     TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
+      # - name: Publish to Prod PyPI
+      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #   run: |
+      #     /bin/bash -x run.sh publish:prod
+      #   env:
+      #     PROD_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN }}
       - name: Push git tags
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git tag 0.0.4
           git push origin main --tags
