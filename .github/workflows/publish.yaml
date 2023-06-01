@@ -14,10 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Set up Python 3.8
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
+      - name: Tag with the release version
+        run: |
+          git tag $(cat version.txt)
       - name: Install Python dependencies
         run: |
           /bin/bash -x run.sh install
@@ -40,11 +45,11 @@ jobs:
           /bin/bash -x run.sh publish:prod
         env:
           PROD_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN }}
-      - name: Push git tags
+      - name: Push tags
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          git tag 0.0.4
-          git push origin main --tags
+          git push origin --tags
+
 
 
 

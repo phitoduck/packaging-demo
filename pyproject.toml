@@ -8,7 +8,6 @@ package_demo = ["*.json"]
 
 [project]
 name = "packaging-demo-eric"
-version = "0.0.4" # PEP 440
 authors = [
     {name = "Eric Riddoch", email = "some-email@gmail.com"},
 ]
@@ -24,8 +23,7 @@ dependencies = [
     "numpy",
     'importlib-metadata; python_version<"3.8"',
 ]
-
-# dynamic = ["version"]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
@@ -33,6 +31,9 @@ release = ["build", "twine"]
 static-code-qa = ["pre-commit"]
 dev = ["packaging-demo-eric[test,release,static-code-qa]"]
 
+
+[tool.setuptools.dynamic]
+version = {file = "version.txt"}
 
 [tool.black]
 line-length = 119
