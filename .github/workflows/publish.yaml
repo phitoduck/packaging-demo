@@ -44,7 +44,7 @@ jobs:
         # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git tag 0.0.4
-          git push origin main --tags
+          git push origin --tags
 
 
 
