@@ -23,7 +23,7 @@ jobs:
           /bin/bash -x run.sh install
       - name: Lint, Format, and other static code quality checks
         run: |
-          /bin/bash -x lint:ci
+          /bin/bash -x run.sh lint:ci
       - name: Build python package
         run: |
           /bin/bash -x run.sh build
@@ -40,6 +40,12 @@ jobs:
           /bin/bash -x run.sh publish:prod
         env:
           PROD_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN }}
+      - name: Push git tags
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git tag 0.0.4
+          git push origin main --tags
+
 
 
 
