@@ -10,47 +10,85 @@ on:
 
 jobs:
 
-  build-test-and-publish:
+  check-version-txt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Tag with the release version
+        run: |
+          git tag $(cat version.txt)
+
+  lint-format-and-static-code-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - name: Set up Python 3.8
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
-      - name: Tag with the release version
+      - name: Install pre-commit
         run: |
-          git tag $(cat version.txt)
-      - name: Install Python dependencies
-        run: |
-          /bin/bash -x run.sh install
+          pip install pre-commit
       - name: Lint, Format, and other static code quality checks
         run: |
           /bin/bash -x run.sh lint:ci
+
+  build-wheel-and-sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+      - name: Install build CLI
+        run: |
+          pip install build
       - name: Build python package
         run: |
           /bin/bash -x run.sh build
+      - name: Upload wheel and sdist
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheel-and-sdist
+          path: ./dist/*
 
+  publish:
+    needs:
+      - build-wheel-and-sdist
+      - lint-format-and-static-code-checks
+      - check-version-txt
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+      - name: Download wheel and sdist
+        uses: actions/download-artifact@v3
+        with:
+          name: wheel-and-sdist
+          path: ./dist/
+      - name: Install twine
+        run: |
+          pip install twine
       - name: Publish to TestPyPI
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           /bin/bash -x run.sh publish:test
         env:
           TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
       - name: Publish to Prod PyPI
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           /bin/bash -x run.sh publish:prod
         env:
           PROD_PYPI_TOKEN: ${{ secrets.PROD_PYPI_TOKEN }}
       - name: Push tags
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git push origin --tags
-
-
 
 
 
