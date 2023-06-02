@@ -31,7 +31,6 @@ release = ["build", "twine"]
 static-code-qa = ["pre-commit"]
 dev = ["packaging-demo-eric[test,release,static-code-qa]"]
 
-
 [tool.setuptools.dynamic]
 version = {file = "version.txt"}
 
