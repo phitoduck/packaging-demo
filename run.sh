@@ -58,24 +58,9 @@ function test:wheel-locally {
     clean || true
     pip install build
     build
-
-    # run only specified tests, if none specified, run all
-    PYTEST_EXIT_STATUS=0
     pip install ./dist/*.whl pytest pytest-cov
-    INSTALLED_PKG_DIR="$(python -c 'import packaging_demo; print(packaging_demo.__path__[0])')"
-    python -m pytest "$THIS_DIR/tests/" \
-        --cov "$INSTALLED_PKG_DIR" \
-        --cov-report html \
-        --cov-report term \
-        --cov-report xml \
-        --junit-xml "$THIS_DIR/test-reports/report.xml" \
-        --cov-fail-under 60 || ((PYTEST_EXIT_STATUS+=$?))
-    mv coverage.xml "$THIS_DIR/test-reports/"
-    mv htmlcov "$THIS_DIR/test-reports/"
-    mv .coverage "$THIS_DIR/test-reports/"
-
-    deactivate
-    return $PYTEST_EXIT_STATUS
+    test:ci
+    deactivate || true
 }
 
 function test:ci {
@@ -92,8 +77,6 @@ function test:ci {
     mv coverage.xml "$THIS_DIR/test-reports/"
     mv htmlcov "$THIS_DIR/test-reports/"
     mv .coverage "$THIS_DIR/test-reports/"
-
-    deactivate
     return $PYTEST_EXIT_STATUS
 }
 
