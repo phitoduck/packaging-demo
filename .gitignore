@@ -1,3 +1,4 @@
+test-reports
 *venv
 .ruff_cache
 build
@@ -6,3 +7,5 @@ dist
 .mypy_cache
 *env
 *.env
+*cache*
+**.pyc

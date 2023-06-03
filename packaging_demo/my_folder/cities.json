@@ -154,6 +154,20 @@
         "capital": true
     },
     {
+        "city": "Oklahoma City",
+        "state": "Oklahoma",
+        "lat": 42.732535,
+        "lng": -84.5555347,
+        "capital": true
+    },
+    {
+        "city": "Salem",
+        "state": "Oregon",
+        "lat": 42.732535,
+        "lng": -84.5555347,
+        "capital": true
+    },
+    {
         "city": "St. Paul",
         "state": "Minnesota",
         "lat": 44.9537029,

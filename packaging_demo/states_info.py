@@ -3,7 +3,7 @@ import json
 from typing import List
 
 THIS_DIR = Path(__file__).parent
-CITIES_JSON_FPATH = THIS_DIR / "./cities.json"
+CITIES_JSON_FPATH = THIS_DIR / "./my_folder/cities.json"
 
 
 def is_city_capitol_of_state(city_name: str, state: str) -> bool:

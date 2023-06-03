@@ -17,6 +17,74 @@ function lint:ci {
     SKIP=no-commit-to-branch pre-commit run --all-files
 }
 
+function test:quick {
+    # save the exit status of tests
+    PYTEST_EXIT_STATUS=0
+    python -m pytest -m 'not slow' "$THIS_DIR/tests/" \
+        --cov "$THIS_DIR/packaging_demo" \
+        --cov-report html \
+        --cov-report term \
+        --cov-report xml \
+        --junit-xml "$THIS_DIR/test-reports/report.xml" \
+        --cov-fail-under 50 || ((PYTEST_EXIT_STATUS+=$?))
+    mv coverage.xml "$THIS_DIR/test-reports/"
+    mv htmlcov "$THIS_DIR/test-reports/"
+    mv .coverage "$THIS_DIR/test-reports/"
+    return $PYTEST_EXIT_STATUS
+}
+
+# (example) ./run.sh test tests/test_slow.py::test__slow_add
+function test {
+    # run only specified tests, if none specified, run all
+    PYTEST_EXIT_STATUS=0
+    python -m pytest -m 'not slow' "$THIS_DIR/tests/" \
+        --cov "$THIS_DIR/packaging_demo" \
+        --cov-report html \
+        --cov-report term \
+        --cov-report xml \
+        --junit-xml "$THIS_DIR/test-reports/report.xml" \
+        --cov-fail-under 60 || ((PYTEST_EXIT_STATUS+=$?))
+    mv coverage.xml "$THIS_DIR/test-reports/"
+    mv htmlcov "$THIS_DIR/test-reports/"
+    mv .coverage "$THIS_DIR/test-reports/"
+    return $PYTEST_EXIT_STATUS
+}
+
+function test:wheel-locally {
+    deactivate || true
+    rm -rf test-env || true
+    python -m venv test-env
+    source test-env/bin/activate
+    clean || true
+    pip install build
+    build
+    pip install ./dist/*.whl pytest pytest-cov
+    test:ci
+    deactivate || true
+}
+
+function test:ci {
+    # run only specified tests, if none specified, run all
+    PYTEST_EXIT_STATUS=0
+    INSTALLED_PKG_DIR="$(python -c 'import packaging_demo; print(packaging_demo.__path__[0])')"
+    python -m pytest "$THIS_DIR/tests/" \
+        --cov "$INSTALLED_PKG_DIR" \
+        --cov-report html \
+        --cov-report term \
+        --cov-report xml \
+        --junit-xml "$THIS_DIR/test-reports/report.xml" \
+        --cov-fail-under 60 || ((PYTEST_EXIT_STATUS+=$?))
+    mv coverage.xml "$THIS_DIR/test-reports/"
+    mv htmlcov "$THIS_DIR/test-reports/"
+    mv .coverage "$THIS_DIR/test-reports/"
+    return $PYTEST_EXIT_STATUS
+}
+
+
+function serve-coverage-report {
+    python -m http.server --directory "$THIS_DIR/htmlcov/"
+}
+
 function build {
     python -m build --sdist --wheel "$THIS_DIR/"
 }
@@ -50,16 +118,23 @@ function publish:prod {
 }
 
 function clean {
-    rm -rf dist build
+    rm -rf dist build coverage.xml test-reports
     find . \
       -type d \
       \( \
         -name "*cache*" \
         -o -name "*.dist-info" \
         -o -name "*.egg-info" \
+        -o -name "*htmlcov" \
       \) \
-      -not -path "./venv/*" \
+      -not -path "*env/*" \
       -exec rm -r {} +
+
+    find . \
+      -type f \
+      -name "*.pyc" \
+      -not -path "*env/*" \
+      -exec rm {} +
 }
 
 function try-load-dotenv {
